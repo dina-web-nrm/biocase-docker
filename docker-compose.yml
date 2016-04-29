@@ -1,0 +1,39 @@
+fs.db:
+  image: tianon/true
+  volumes:
+    - ./mysql-shr:/shr:rw
+    - ./mysql-conf.d:/etc/mysql/conf.d
+    - ./mysql-datadir:/var/lib/mysql:rw
+    - ./mysql-autoload:/docker-entrypoint-initdb.d:rw
+
+fs.biocase:
+  image: tianon/true
+  volumes:
+    - ./biocase_config:/usr/src/app/biocase/config
+    - ./biocase_log:/usr/src/app/biocase/log
+    - ./biocase_cache:/usr/src/app/biocase/cache
+    - ./biocase_archive:/usr/src/app/biocase/archive
+
+db:
+  image: mysql:latest
+  environment:
+    - MYSQL_ROOT_PASSWORD=password12
+    - MYSQL_DATABASE=dina_nrm
+    - MYSQL_USER=dina
+    - MYSQL_PASSWORD=password12
+  ports:
+    - "3306:3306"
+  volumes_from:
+    - fs.db
+
+biocase:
+  environment:
+    - VIRTUAL_HOST=biocase.dina-web.net
+  build: biocase
+  ports:
+    - "8080:80"
+  volumes_from:
+    - fs.biocase
+  links:
+    - db
+
