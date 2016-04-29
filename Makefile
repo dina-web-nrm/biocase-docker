@@ -1,5 +1,5 @@
 ME=$(USER)
-all: build init up
+all: build up
 
 clean: stop rm
 
