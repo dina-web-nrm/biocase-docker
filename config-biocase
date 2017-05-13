@@ -1,0 +1,12 @@
+#!/bin/bash
+
+cd /opt/biocase
+python setup.py
+
+chown -R www-data.root /opt/biocase/www
+
+#TODO Allow for configuring the www-root and virtual host address
+
+sed -i 's/<\/VirtualHost>/\n\nAlias \/biocase "\/opt\/biocase\/www"\n<Directory "\/opt\/biocase\/www">\n\tAllowOverride None\n\tOrder allow,deny\n\tAllow from all\n\tOptions \+ExecCGI \+Indexes\n\tAddHandler cgi-script cgi\n\tAddHandler cgi-script py\n\tDirectoryIndex index\.cgi index\.py index\.html\n\tRequire all granted\n<\/Directory>\n\n<\/VirtualHost>/g' /etc/apache2/sites-enabled/000-default.conf
+
+#TODO set BioCASe default configuration for the dockerized BioCASe. Currently the default is still for Windows servers (e.g. C:\Program Files\GraphViz\dot.exe), but can be changed in the BioCASe administration interface 

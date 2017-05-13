@@ -1,32 +1,33 @@
 ME=$(USER)
-all: build up
+TAG=dina/biocase
+CONTAINER=biocase-docker
+PORT=80
 
-clean: stop rm
+all: build start config
 
-cleandb:
-	docker-compose stop db
-	docker-compose rm -vf db
-	sudo chown -R $(ME):$(ME) ./mysql-datadir
-	sudo rm -rf mysql-datadir
-
-access:
-	@echo "Accessing shell on biocase"
-	docker exec -it dwbiocase_biocase_1 bash
-
-initdb:
-	@echo "If you just ran make cleandb, this will load latest db dump placed in mysql-autoload"
-	docker-compose up -d db
-	@echo "Run docker-compose logs db for seeing progress"
+clean: stop rm rmi
 
 build:
-	@echo "Rebuilding images"
-	docker-compose build
+	@echo "(Re-)building BioCASe image..."
+	docker build -t="$(TAG)" ./
 
-up:
-	docker-compose up -d
+config:
+	@echo "Configuring BioCASe..."
+	docker exec -it $(CONTAINER) config-biocase
+	docker restart $(CONTAINER) 
+	
+start:
+	@echo "Starting BioCASe..."
+	docker run -d -p$(PORT):80 --name=$(CONTAINER) --hostname=$(CONTAINER) "$(TAG)"
 
 stop:
-	docker-compose stop
+	@echo "Stopping BioCASe..."
+	docker stop $(CONTAINER)
 
 rm:
-	docker-compose rm -vf
+	@echo "Removing BioCASe container..."
+	docker rm $(CONTAINER) 
+
+rmi:
+	@echo "Removing BioCASe image..."
+	docker rmi $(TAG)
